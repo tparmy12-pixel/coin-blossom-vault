@@ -11,6 +11,7 @@ import Redeem from "./pages/Redeem";
 import Leaderboard from "./pages/Leaderboard";
 import Profile from "./pages/Profile";
 import Admin from "./pages/Admin";
+import SmartPayDemo from "./pages/SmartPayDemo";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -30,6 +31,7 @@ const App = () => (
             <Route path="/leaderboard" element={<Leaderboard />} />
             <Route path="/profile" element={<Profile />} />
             <Route path="/admin" element={<Admin />} />
+            <Route path="/smartpay" element={<SmartPayDemo />} />
             <Route path="*" element={<NotFound />} />
           </Routes>
         </UserProvider>
