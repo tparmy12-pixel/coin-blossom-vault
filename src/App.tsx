@@ -31,6 +31,7 @@ const App = () => (
             <Route path="/leaderboard" element={<Leaderboard />} />
             <Route path="/profile" element={<Profile />} />
             <Route path="/admin" element={<Admin />} />
+            <Route path="/smartpay" element={<SmartPayDemo />} />
             <Route path="*" element={<NotFound />} />
           </Routes>
         </UserProvider>
