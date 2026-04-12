@@ -23,10 +23,12 @@ const PrivacyScreen = ({ onBack }: Props) => (
       </div>
 
       {[
-        { title: "No Real Transactions", desc: "All payments, balances, and cards shown are fictional demo data." },
-        { title: "No Data Collection", desc: "We do not collect, store, or process any real financial information." },
-        { title: "No Real Payment Integration", desc: "This app has no connection to any real payment gateway or bank." },
-        { title: "Educational Purpose", desc: "Built for UI/UX learning and design demonstration only." },
+        { title: "⚠️ Yeh App Sirf Mazaak Ke Liye Hai", desc: "This is a prank/joke app. No real money, no real payments, no real transactions. Sirf entertainment ke liye banaya gaya hai." },
+        { title: "No Real Transactions", desc: "All payments, balances, cards, and bank details shown are completely fictional and fake. Koi bhi transaction real nahi hai." },
+        { title: "No Data Collection", desc: "We do not collect, store, or process any real financial or personal information. Aapka koi data store nahi hota." },
+        { title: "No Real Payment Integration", desc: "This app has no connection to any real payment gateway, bank, or UPI system. Koi real payment nahi hoti." },
+        { title: "Prank / Entertainment Purpose Only", desc: "Yeh app sirf prank aur mazaak ke liye hai. Isse kisi ko dhoka dena ya fraud karna bilkul galat hai. Use responsibly." },
+        { title: "No Real Money Involved", desc: "App mein dikhaya gaya balance, loan, ya koi bhi amount completely fake hai. Real money ka koi lena-dena nahi hai." },
       ].map((item) => (
         <div key={item.title} className="rounded-xl border bg-card p-4">
           <p className="text-sm font-semibold">{item.title}</p>
