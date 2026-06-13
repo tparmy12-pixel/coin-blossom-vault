@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useUser } from "@/contexts/UserContext";
 import { supabase } from "@/integrations/supabase/client";
+import AdSense from "@/components/AdSense";
 import BottomNav from "@/components/BottomNav";
 import { ArrowDownLeft, ArrowUpRight, Gift, Send } from "lucide-react";
 import type { Tables } from "@/integrations/supabase/types";
@@ -44,6 +45,7 @@ const History = () => {
         <p className="text-sm text-muted-foreground">All your wallet activity</p>
       </div>
       <div className="space-y-2 px-4">
+        <AdSense slot="9692498665" className="mb-3" />
         {txns.length === 0 ? (
           <p className="py-16 text-center text-muted-foreground">No transactions yet</p>
         ) : txns.map(txn => {
