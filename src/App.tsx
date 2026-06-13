@@ -24,7 +24,8 @@ const App = () => (
       <BrowserRouter>
         <UserProvider>
           <Routes>
-            <Route path="/" element={<Login />} />
+            <Route path="/" element={<SmartPayDemo />} />
+            <Route path="/login" element={<Login />} />
             <Route path="/dashboard" element={<Dashboard />} />
             <Route path="/history" element={<History />} />
             <Route path="/redeem" element={<Redeem />} />

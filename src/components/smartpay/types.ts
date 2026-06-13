@@ -1,4 +1,21 @@
-export type Screen = "home" | "bank" | "form" | "success" | "addMoney" | "cards" | "upgrade" | "addMoneySuccess" | "privacy";
+export type Screen =
+  | "home"
+  | "bank"
+  | "form"
+  | "success"
+  | "addMoney"
+  | "cards"
+  | "upgrade"
+  | "addMoneySuccess"
+  | "privacy"
+  | "rewards"
+  | "recharge"
+  | "bills"
+  | "travel"
+  | "referral"
+  | "notifications"
+  | "settings"
+  | "qr";
 
 export interface Bank {
   name: string;

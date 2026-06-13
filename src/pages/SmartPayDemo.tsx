@@ -9,6 +9,14 @@ import AddMoneyScreen from "@/components/smartpay/AddMoneyScreen";
 import CardsScreen from "@/components/smartpay/CardsScreen";
 import UpgradeScreen from "@/components/smartpay/UpgradeScreen";
 import PrivacyScreen from "@/components/smartpay/PrivacyScreen";
+import RewardsScreen from "@/components/smartpay/RewardsScreen";
+import RechargeScreen from "@/components/smartpay/RechargeScreen";
+import TravelScreen from "@/components/smartpay/TravelScreen";
+import ReferralScreen from "@/components/smartpay/ReferralScreen";
+import NotificationsScreen from "@/components/smartpay/NotificationsScreen";
+import SettingsScreen from "@/components/smartpay/SettingsScreen";
+import QRScreen from "@/components/smartpay/QRScreen";
+import { useEffect } from "react";
 
 const generateTxnId = () =>
   "TXN" + Date.now().toString(36).toUpperCase() + Math.random().toString(36).substring(2, 6).toUpperCase();
@@ -26,6 +34,16 @@ const SmartPayDemo = () => {
   const [txnId, setTxnId] = useState(generateTxnId());
   const [txnDate, setTxnDate] = useState(new Date().toLocaleString("en-IN"));
   const [lastAction, setLastAction] = useState<"send" | "add">("send");
+  const [coins, setCoins] = useState(0);
+  const [referralCode] = useState(() => "PRANK" + Math.random().toString(36).substring(2, 7).toUpperCase());
+
+  useEffect(() => {
+    if (localStorage.getItem("prankpay_theme") === "dark") {
+      document.documentElement.classList.add("dark");
+    }
+  }, []);
+
+  const earnCoins = (amount: number, _src: string) => setCoins((c) => c + amount);
 
   const resetSendFlow = useCallback(() => {
     setScreen("home");
@@ -62,7 +80,7 @@ const SmartPayDemo = () => {
 
   switch (screen) {
     case "home":
-      return <HomeScreen balance={balance} isPremium={isPremium} onNavigate={setScreen} />;
+      return <HomeScreen balance={balance} coins={coins} isPremium={isPremium} onNavigate={setScreen} />;
     case "bank":
       return <BankSelectionScreen selectedBank={selectedBank} onSelect={(bank) => { setSelectedBank(bank); setScreen("form"); }} onBack={() => setScreen("home")} />;
     case "form":
@@ -104,6 +122,22 @@ const SmartPayDemo = () => {
       return <UpgradeScreen isPremium={isPremium} onUpgrade={() => setIsPremium(true)} onBack={() => setScreen("home")} />;
     case "privacy":
       return <PrivacyScreen onBack={() => setScreen("home")} />;
+    case "rewards":
+      return <RewardsScreen coins={coins} onEarn={earnCoins} onBack={() => setScreen("home")} />;
+    case "recharge":
+      return <RechargeScreen mode="recharge" onBack={() => setScreen("home")} />;
+    case "bills":
+      return <RechargeScreen mode="bills" onBack={() => setScreen("home")} />;
+    case "travel":
+      return <TravelScreen onBack={() => setScreen("home")} />;
+    case "referral":
+      return <ReferralScreen code={referralCode} onBack={() => setScreen("home")} />;
+    case "notifications":
+      return <NotificationsScreen onBack={() => setScreen("home")} />;
+    case "settings":
+      return <SettingsScreen onBack={() => setScreen("home")} onPrivacy={() => setScreen("privacy")} />;
+    case "qr":
+      return <QRScreen upiId={upiId || "demo@prankpay"} onBack={() => setScreen("home")} />;
     default:
       return null;
   }
