@@ -1,3 +1,4 @@
+import AdSense from "@/components/AdSense";
 import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import {
