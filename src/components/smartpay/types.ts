@@ -15,7 +15,10 @@ export type Screen =
   | "referral"
   | "notifications"
   | "settings"
-  | "qr";
+  | "qr"
+  | "rewardVideo"
+  | "withdraw"
+  | "support";
 
 export interface Bank {
   name: string;
