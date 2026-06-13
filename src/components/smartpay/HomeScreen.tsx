@@ -2,7 +2,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import {
   Wallet, Send, PlusCircle, CreditCard, Crown, Bell, Search, QrCode, ScanLine,
-  Smartphone, Zap, Plane, Gift, Users, Settings as Cog, Tag,
+  Smartphone, Zap, Plane, Gift, Users, Settings as Cog, Tag, Play, Banknote, Headphones,
 } from "lucide-react";
 import type { Screen } from "./types";
 
@@ -22,6 +22,9 @@ const QUICK = [
   { icon: Zap, label: "Bills", screen: "bills" as Screen },
   { icon: Plane, label: "Travel", screen: "travel" as Screen },
   { icon: Gift, label: "Rewards", screen: "rewards" as Screen },
+  { icon: Play, label: "Watch & Earn", screen: "rewardVideo" as Screen },
+  { icon: Banknote, label: "Withdraw", screen: "withdraw" as Screen },
+  { icon: Headphones, label: "Support", screen: "support" as Screen },
   { icon: Users, label: "Refer", screen: "referral" as Screen },
   { icon: CreditCard, label: "Cards", screen: "cards" as Screen },
   { icon: Crown, label: "Loan", screen: "upgrade" as Screen },

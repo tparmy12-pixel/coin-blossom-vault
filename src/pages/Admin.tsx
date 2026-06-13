@@ -12,6 +12,7 @@ import BottomNav from "@/components/BottomNav";
 import { toast } from "sonner";
 import { Plus, Trash2, Users, Tag, BarChart3 } from "lucide-react";
 import type { Tables } from "@/integrations/supabase/types";
+import { getWithdrawals, saveWithdrawals, getSupport, addSupport, Withdrawal, SupportMsg } from "@/lib/demoCodes";
 
 type User = Tables<"users">;
 type RedeemCode = Tables<"redeem_codes">;
@@ -26,6 +27,9 @@ const Admin = () => {
   const [balanceOpen, setBalanceOpen] = useState(false);
   const [selectedUser, setSelectedUser] = useState<User | null>(null);
   const [balanceChange, setBalanceChange] = useState("");
+  const [withdrawals, setWithdrawals] = useState<Withdrawal[]>([]);
+  const [support, setSupport] = useState<SupportMsg[]>([]);
+  const [reply, setReply] = useState("");
 
   useEffect(() => {
     if (!loading && (!currentUser || !isAdmin)) { navigate("/dashboard"); return; }
@@ -41,6 +45,28 @@ const Admin = () => {
   };
 
   useEffect(() => { if (isAdmin) fetchData(); }, [isAdmin]);
+
+  useEffect(() => {
+    if (!isAdmin) return;
+    const refresh = () => { setWithdrawals(getWithdrawals()); setSupport(getSupport()); };
+    refresh();
+    const i = setInterval(refresh, 1500);
+    return () => clearInterval(i);
+  }, [isAdmin]);
+
+  const updateWithdrawal = (id: string, status: "approved" | "rejected") => {
+    const list = getWithdrawals().map(w => w.id === id ? { ...w, status } : w);
+    saveWithdrawals(list);
+    setWithdrawals(list);
+    toast.success(`Request ${status}`);
+  };
+
+  const sendReply = () => {
+    if (!reply.trim()) return;
+    addSupport("admin", reply.trim());
+    setReply("");
+    setSupport(getSupport());
+  };
 
   const createCode = async () => {
     if (!newCode.code || !newCode.reward_amount || !newCode.expiry_date) return;
@@ -110,9 +136,11 @@ const Admin = () => {
       </div>
 
       <Tabs defaultValue="codes" className="px-4">
-        <TabsList className="w-full">
+        <TabsList className="grid w-full grid-cols-4">
           <TabsTrigger value="codes" className="flex-1">Codes</TabsTrigger>
           <TabsTrigger value="users" className="flex-1">Users</TabsTrigger>
+          <TabsTrigger value="withdrawals" className="flex-1">Cashout</TabsTrigger>
+          <TabsTrigger value="support" className="flex-1">Support</TabsTrigger>
         </TabsList>
 
         <TabsContent value="codes" className="space-y-3">
@@ -142,6 +170,51 @@ const Admin = () => {
               </CardContent>
             </Card>
           ))}
+        </TabsContent>
+
+        <TabsContent value="withdrawals" className="space-y-2">
+          {withdrawals.length === 0 && <p className="text-center text-xs text-muted-foreground py-4">No withdrawal requests.</p>}
+          {withdrawals.map(w => (
+            <Card key={w.id}>
+              <CardContent className="p-3">
+                <div className="flex items-start justify-between">
+                  <div>
+                    <p className="font-semibold">₹{w.amount.toLocaleString("en-IN")}</p>
+                    <p className="text-[11px] text-muted-foreground">{w.upi}</p>
+                    <p className="text-[10px] text-muted-foreground">{new Date(w.at).toLocaleString("en-IN")}</p>
+                  </div>
+                  <span className={`text-[10px] font-bold uppercase ${w.status === "pending" ? "text-amber-600" : w.status === "approved" ? "text-green-600" : "text-destructive"}`}>{w.status}</span>
+                </div>
+                {w.status === "pending" && (
+                  <div className="mt-2 flex gap-2">
+                    <Button size="sm" className="flex-1" onClick={() => updateWithdrawal(w.id, "approved")}>Approve</Button>
+                    <Button size="sm" variant="outline" className="flex-1" onClick={() => updateWithdrawal(w.id, "rejected")}>Reject</Button>
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+          ))}
+        </TabsContent>
+
+        <TabsContent value="support" className="space-y-2">
+          <Card>
+            <CardContent className="p-3">
+              <div className="max-h-72 space-y-2 overflow-y-auto">
+                {support.length === 0 && <p className="text-center text-xs text-muted-foreground py-4">No messages yet.</p>}
+                {support.map(m => (
+                  <div key={m.id} className={`flex ${m.from === "admin" ? "justify-end" : "justify-start"}`}>
+                    <div className={`max-w-[80%] rounded-2xl px-3 py-1.5 text-xs ${m.from === "admin" ? "bg-primary text-primary-foreground" : "bg-muted"}`}>
+                      {m.text}
+                    </div>
+                  </div>
+                ))}
+              </div>
+              <div className="mt-3 flex gap-2">
+                <Input placeholder="Reply to user…" value={reply} onChange={e => setReply(e.target.value)} onKeyDown={e => e.key === "Enter" && sendReply()} />
+                <Button size="sm" onClick={sendReply}>Send</Button>
+              </div>
+            </CardContent>
+          </Card>
         </TabsContent>
       </Tabs>
 
