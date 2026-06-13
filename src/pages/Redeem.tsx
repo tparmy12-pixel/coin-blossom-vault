@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { useEffect } from "react";
 import { useUser } from "@/contexts/UserContext";
 import { supabase } from "@/integrations/supabase/client";
+import AdSense from "@/components/AdSense";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent } from "@/components/ui/card";
@@ -74,6 +75,9 @@ const Redeem = () => {
             </Button>
           </CardContent>
         </Card>
+        <div className="mt-4">
+          <AdSense slot="9692498665" />
+        </div>
       </div>
       <BottomNav />
     </div>

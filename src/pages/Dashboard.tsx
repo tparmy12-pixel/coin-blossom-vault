@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useUser } from "@/contexts/UserContext";
 import { supabase } from "@/integrations/supabase/client";
+import AdSense from "@/components/AdSense";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -119,8 +120,13 @@ const Dashboard = () => {
         ))}
       </div>
 
-      {/* Recent Transactions */}
+      {/* Ad between quick actions and recent */}
       <div className="px-4">
+        <AdSense slot="9692498665" />
+      </div>
+
+      {/* Recent Transactions */}
+      <div className="px-4 pt-4">
         <div className="mb-3 flex items-center justify-between">
           <h2 className="font-semibold">Recent Activity</h2>
           <button onClick={() => navigate("/history")} className="text-xs text-primary">See all</button>

@@ -1,3 +1,4 @@
+import AdSense from "@/components/AdSense";
 import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import {
@@ -107,8 +108,13 @@ const HomeScreen = ({ balance, coins, isPremium, onNavigate }: Props) => (
       </div>
     </div>
 
+    {/* Ad between quick actions and recent */}
+    <div className="px-5 pt-4">
+      <AdSense slot="9692498665" />
+    </div>
+
     {/* Recent */}
-    <div className="px-5 pt-6">
+    <div className="px-5 pt-4">
       <p className="mb-3 text-sm font-semibold">Recent Activity</p>
       <div className="space-y-2">
         {[
