@@ -16,6 +16,9 @@ import ReferralScreen from "@/components/smartpay/ReferralScreen";
 import NotificationsScreen from "@/components/smartpay/NotificationsScreen";
 import SettingsScreen from "@/components/smartpay/SettingsScreen";
 import QRScreen from "@/components/smartpay/QRScreen";
+import RewardVideoScreen from "@/components/smartpay/RewardVideoScreen";
+import WithdrawalScreen from "@/components/smartpay/WithdrawalScreen";
+import SupportScreen from "@/components/smartpay/SupportScreen";
 import { useEffect } from "react";
 
 const generateTxnId = () =>
@@ -138,6 +141,12 @@ const SmartPayDemo = () => {
       return <SettingsScreen onBack={() => setScreen("home")} onPrivacy={() => setScreen("privacy")} />;
     case "qr":
       return <QRScreen upiId={upiId || "demo@prankpay"} onBack={() => setScreen("home")} />;
+    case "rewardVideo":
+      return <RewardVideoScreen onBack={() => setScreen("home")} onReward={(c) => earnCoins(c, "video")} />;
+    case "withdraw":
+      return <WithdrawalScreen balance={balance} onBack={() => setScreen("home")} />;
+    case "support":
+      return <SupportScreen onBack={() => setScreen("home")} />;
     default:
       return null;
   }
