@@ -14,6 +14,35 @@ export type Database = {
   }
   public: {
     Tables: {
+      login_logs: {
+        Row: {
+          created_at: string
+          id: string
+          user_agent: string | null
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          user_agent?: string | null
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          user_agent?: string | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "login_logs_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       redeem_codes: {
         Row: {
           code: string
@@ -91,6 +120,45 @@ export type Database = {
           },
         ]
       }
+      referrals: {
+        Row: {
+          created_at: string
+          id: string
+          referee_id: string
+          referrer_id: string
+          reward_amount: number
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          referee_id: string
+          referrer_id: string
+          reward_amount?: number
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          referee_id?: string
+          referrer_id?: string
+          reward_amount?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "referrals_referee_id_fkey"
+            columns: ["referee_id"]
+            isOneToOne: true
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "referrals_referrer_id_fkey"
+            columns: ["referrer_id"]
+            isOneToOne: false
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       transactions: {
         Row: {
           amount: number
@@ -158,32 +226,61 @@ export type Database = {
       users: {
         Row: {
           avatar_url: string | null
+          country: string | null
           created_at: string
+          district: string | null
           id: string
+          limit_amount: number
           name: string
+          pin_code: string | null
+          referral_code: string | null
+          referred_by: string | null
+          state: string | null
           theme: string
           updated_at: string
           wallet_balance: number
         }
         Insert: {
           avatar_url?: string | null
+          country?: string | null
           created_at?: string
+          district?: string | null
           id?: string
+          limit_amount?: number
           name: string
+          pin_code?: string | null
+          referral_code?: string | null
+          referred_by?: string | null
+          state?: string | null
           theme?: string
           updated_at?: string
           wallet_balance?: number
         }
         Update: {
           avatar_url?: string | null
+          country?: string | null
           created_at?: string
+          district?: string | null
           id?: string
+          limit_amount?: number
           name?: string
+          pin_code?: string | null
+          referral_code?: string | null
+          referred_by?: string | null
+          state?: string | null
           theme?: string
           updated_at?: string
           wallet_balance?: number
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "users_referred_by_fkey"
+            columns: ["referred_by"]
+            isOneToOne: false
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
+        ]
       }
     }
     Views: {

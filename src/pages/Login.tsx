@@ -7,13 +7,24 @@ import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Wallet, Plus, LogIn } from "lucide-react";
 import type { Tables } from "@/integrations/supabase/types";
+import { toast } from "sonner";
 
 type User = Tables<"users">;
 
+const genReferralCode = () => {
+  const chars = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
+  let s = "";
+  for (let i = 0; i < 8; i++) s += chars[Math.floor(Math.random() * chars.length)];
+  return s;
+};
+
 const Login = () => {
   const [users, setUsers] = useState<User[]>([]);
-  const [newName, setNewName] = useState("");
   const [showCreate, setShowCreate] = useState(false);
+  const [form, setForm] = useState({
+    name: "", country: "India", state: "", district: "", pin_code: "", referral_code: "",
+  });
+  const [submitting, setSubmitting] = useState(false);
   const { login, currentUser, loading } = useUser();
   const navigate = useNavigate();
 
@@ -28,16 +39,68 @@ const Login = () => {
   }, []);
 
   const handleLogin = async (userId: string) => {
+    await supabase.from("login_logs").insert({ user_id: userId, user_agent: navigator.userAgent });
     await login(userId);
     navigate("/dashboard");
   };
 
   const handleCreate = async () => {
-    if (!newName.trim()) return;
-    const { data } = await supabase.from("users").insert({ name: newName.trim() }).select().single();
-    if (data) {
+    if (!form.name.trim() || !form.state.trim() || !form.district.trim() || !form.pin_code.trim()) {
+      toast.error("Please fill all required fields");
+      return;
+    }
+    setSubmitting(true);
+    try {
+      let referrer: User | null = null;
+      let limitAmount = 5000;
+      if (form.referral_code.trim()) {
+        const { data: ref } = await supabase
+          .from("users").select("*")
+          .eq("referral_code", form.referral_code.trim().toUpperCase())
+          .maybeSingle();
+        if (!ref) { toast.error("Invalid referral code"); setSubmitting(false); return; }
+        referrer = ref as User;
+        limitAmount = 6000;
+      }
+
+      // Generate a unique referral code
+      let myCode = genReferralCode();
+      for (let i = 0; i < 5; i++) {
+        const { data: exists } = await supabase.from("users").select("id").eq("referral_code", myCode).maybeSingle();
+        if (!exists) break;
+        myCode = genReferralCode();
+      }
+
+      const { data, error } = await supabase.from("users").insert({
+        name: form.name.trim(),
+        country: form.country.trim(),
+        state: form.state.trim(),
+        district: form.district.trim(),
+        pin_code: form.pin_code.trim(),
+        referral_code: myCode,
+        referred_by: referrer?.id ?? null,
+        limit_amount: limitAmount,
+      } as any).select().single();
+      if (error || !data) { toast.error(error?.message ?? "Failed to create"); setSubmitting(false); return; }
+
+      if (referrer) {
+        // One-time reward; UNIQUE(referee_id) prevents duplicates
+        const { error: refErr } = await supabase.from("referrals").insert({
+          referrer_id: referrer.id, referee_id: data.id, reward_amount: 1000,
+        } as any);
+        if (!refErr) {
+          await supabase.from("users")
+            .update({ limit_amount: Number((referrer as any).limit_amount ?? 5000) + 1000 } as any)
+            .eq("id", referrer.id);
+        }
+      }
+
+      await supabase.from("login_logs").insert({ user_id: data.id, user_agent: navigator.userAgent });
       await login(data.id);
+      toast.success(`Welcome! Your referral code: ${myCode}`);
       navigate("/dashboard");
+    } finally {
+      setSubmitting(false);
     }
   };
 
@@ -76,9 +139,19 @@ const Login = () => {
           ))}
 
           {showCreate ? (
-            <div className="flex gap-2 pt-2">
-              <Input placeholder="Your name" value={newName} onChange={e => setNewName(e.target.value)} onKeyDown={e => e.key === "Enter" && handleCreate()} />
-              <Button onClick={handleCreate} size="sm">Go</Button>
+            <div className="space-y-2 pt-2">
+              <Input placeholder="Your name *" value={form.name} onChange={e => setForm({ ...form, name: e.target.value })} />
+              <div className="grid grid-cols-2 gap-2">
+                <Input placeholder="Country *" value={form.country} onChange={e => setForm({ ...form, country: e.target.value })} />
+                <Input placeholder="State *" value={form.state} onChange={e => setForm({ ...form, state: e.target.value })} />
+              </div>
+              <div className="grid grid-cols-2 gap-2">
+                <Input placeholder="District/Area *" value={form.district} onChange={e => setForm({ ...form, district: e.target.value })} />
+                <Input placeholder="PIN Code *" inputMode="numeric" value={form.pin_code} onChange={e => setForm({ ...form, pin_code: e.target.value })} />
+              </div>
+              <Input placeholder="Referral Code (optional)" value={form.referral_code} onChange={e => setForm({ ...form, referral_code: e.target.value.toUpperCase() })} />
+              <p className="text-[10px] text-muted-foreground">Default limit ₹5,000 · with referral code ₹6,000</p>
+              <Button className="w-full" disabled={submitting} onClick={handleCreate}>{submitting ? "Creating…" : "Create Account"}</Button>
             </div>
           ) : (
             <Button variant="outline" className="w-full" onClick={() => setShowCreate(true)}>

@@ -16,6 +16,8 @@ import { getWithdrawals, saveWithdrawals, getSupport, addSupport, Withdrawal, Su
 
 type User = Tables<"users">;
 type RedeemCode = Tables<"redeem_codes">;
+type Referral = Tables<"referrals">;
+type LoginLog = Tables<"login_logs">;
 
 const Admin = () => {
   const { currentUser, isAdmin, loading } = useUser();
@@ -30,18 +32,26 @@ const Admin = () => {
   const [withdrawals, setWithdrawals] = useState<Withdrawal[]>([]);
   const [support, setSupport] = useState<SupportMsg[]>([]);
   const [reply, setReply] = useState("");
+  const [referrals, setReferrals] = useState<Referral[]>([]);
+  const [loginLogs, setLoginLogs] = useState<LoginLog[]>([]);
+  const [limitOpen, setLimitOpen] = useState(false);
+  const [limitValue, setLimitValue] = useState("");
 
   useEffect(() => {
     if (!loading && (!currentUser || !isAdmin)) { navigate("/dashboard"); return; }
   }, [currentUser, isAdmin, loading, navigate]);
 
   const fetchData = async () => {
-    const [u, c] = await Promise.all([
+    const [u, c, r, l] = await Promise.all([
       supabase.from("users").select("*").order("wallet_balance", { ascending: false }),
       supabase.from("redeem_codes").select("*").order("created_at", { ascending: false }),
+      supabase.from("referrals").select("*").order("created_at", { ascending: false }),
+      supabase.from("login_logs").select("*").order("created_at", { ascending: false }).limit(100),
     ]);
     if (u.data) setUsers(u.data);
     if (c.data) setCodes(c.data);
+    if (r.data) setReferrals(r.data);
+    if (l.data) setLoginLogs(l.data);
   };
 
   useEffect(() => { if (isAdmin) fetchData(); }, [isAdmin]);
@@ -106,10 +116,19 @@ const Admin = () => {
     fetchData();
   };
 
+  const updateLimit = async () => {
+    if (!selectedUser || !limitValue) return;
+    await supabase.from("users").update({ limit_amount: Number(limitValue) }).eq("id", selectedUser.id);
+    setLimitOpen(false); setLimitValue(""); setSelectedUser(null);
+    toast.success("Limit updated!");
+    fetchData();
+  };
+
   if (loading || !isAdmin) return null;
 
   const totalBalance = users.reduce((s, u) => s + Number(u.wallet_balance), 0);
   const activeCodes = codes.filter(c => new Date(c.expiry_date) > new Date()).length;
+  const userById = (id: string) => users.find(u => u.id === id);
 
   return (
     <div className="mx-auto min-h-screen max-w-md pb-20">
@@ -136,9 +155,11 @@ const Admin = () => {
       </div>
 
       <Tabs defaultValue="codes" className="px-4">
-        <TabsList className="grid w-full grid-cols-4">
+        <TabsList className="grid w-full grid-cols-6 text-[11px]">
           <TabsTrigger value="codes" className="flex-1">Codes</TabsTrigger>
           <TabsTrigger value="users" className="flex-1">Users</TabsTrigger>
+          <TabsTrigger value="referrals" className="flex-1">Refs</TabsTrigger>
+          <TabsTrigger value="logins" className="flex-1">Logins</TabsTrigger>
           <TabsTrigger value="withdrawals" className="flex-1">Cashout</TabsTrigger>
           <TabsTrigger value="support" className="flex-1">Support</TabsTrigger>
         </TabsList>
@@ -161,14 +182,50 @@ const Admin = () => {
         <TabsContent value="users" className="space-y-2">
           {users.map(u => (
             <Card key={u.id}>
-              <CardContent className="flex items-center justify-between p-3">
-                <div>
-                  <p className="font-medium">{u.name}</p>
-                  <p className="text-xs text-muted-foreground">₹{Number(u.wallet_balance).toLocaleString("en-IN")}</p>
+              <CardContent className="p-3">
+                <div className="flex items-start justify-between gap-2">
+                  <div className="min-w-0 flex-1">
+                    <p className="font-medium">{u.name}</p>
+                    <p className="text-[11px] text-muted-foreground">
+                      ₹{Number(u.wallet_balance).toLocaleString("en-IN")} · Limit ₹{Number(u.limit_amount).toLocaleString("en-IN")}
+                    </p>
+                    <p className="text-[10px] text-muted-foreground truncate">
+                      Code: <span className="font-mono">{u.referral_code ?? "-"}</span> · {u.district ?? "-"}, {u.state ?? "-"} {u.pin_code ?? ""}
+                    </p>
+                  </div>
+                  <div className="flex flex-col gap-1">
+                    <Button size="sm" variant="outline" className="h-7 text-[10px]" onClick={() => { setSelectedUser(u); setBalanceOpen(true); }}>₹</Button>
+                    <Button size="sm" variant="outline" className="h-7 text-[10px]" onClick={() => { setSelectedUser(u); setLimitValue(String(u.limit_amount)); setLimitOpen(true); }}>Limit</Button>
+                  </div>
                 </div>
-                <Button size="sm" variant="outline" onClick={() => { setSelectedUser(u); setBalanceOpen(true); }}>Adjust</Button>
               </CardContent>
             </Card>
+          ))}
+        </TabsContent>
+
+        <TabsContent value="referrals" className="space-y-2">
+          <Card><CardContent className="grid grid-cols-2 gap-2 p-3 text-center">
+            <div><p className="text-lg font-bold">{referrals.length}</p><p className="text-[10px] text-muted-foreground">Total Referrals</p></div>
+            <div><p className="text-lg font-bold">₹{referrals.reduce((s,r)=>s+Number(r.reward_amount),0).toLocaleString("en-IN")}</p><p className="text-[10px] text-muted-foreground">Total Rewards</p></div>
+          </CardContent></Card>
+          {referrals.length === 0 && <p className="text-center text-xs text-muted-foreground py-4">No referrals yet.</p>}
+          {referrals.map(r => (
+            <Card key={r.id}><CardContent className="p-3 text-xs">
+              <p><span className="text-muted-foreground">Referrer:</span> <span className="font-medium">{userById(r.referrer_id)?.name ?? "—"}</span> ({userById(r.referrer_id)?.referral_code ?? "—"})</p>
+              <p><span className="text-muted-foreground">Joined:</span> <span className="font-medium">{userById(r.referee_id)?.name ?? "—"}</span></p>
+              <p className="text-[10px] text-muted-foreground">+₹{Number(r.reward_amount)} · {new Date(r.created_at).toLocaleString("en-IN")}</p>
+            </CardContent></Card>
+          ))}
+        </TabsContent>
+
+        <TabsContent value="logins" className="space-y-2">
+          {loginLogs.length === 0 && <p className="text-center text-xs text-muted-foreground py-4">No login activity.</p>}
+          {loginLogs.map(l => (
+            <Card key={l.id}><CardContent className="p-3 text-xs">
+              <p className="font-medium">{userById(l.user_id)?.name ?? l.user_id.slice(0,8)}</p>
+              <p className="text-[10px] text-muted-foreground">{new Date(l.created_at).toLocaleString("en-IN")}</p>
+              {l.user_agent && <p className="truncate text-[10px] text-muted-foreground">{l.user_agent}</p>}
+            </CardContent></Card>
           ))}
         </TabsContent>
 
@@ -242,6 +299,20 @@ const Admin = () => {
             <div className="flex gap-2">
               <Button className="flex-1" onClick={adjustBalance}>Apply</Button>
               <Button variant="outline" className="flex-1" onClick={() => setBalanceOpen(false)}>Cancel</Button>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      {/* Adjust Limit Dialog */}
+      <Dialog open={limitOpen} onOpenChange={setLimitOpen}>
+        <DialogContent className="max-w-sm">
+          <DialogHeader><DialogTitle>Set Limit — {selectedUser?.name}</DialogTitle></DialogHeader>
+          <div className="space-y-3">
+            <Input type="number" placeholder="Limit amount" value={limitValue} onChange={e => setLimitValue(e.target.value)} />
+            <div className="flex gap-2">
+              <Button className="flex-1" onClick={updateLimit}>Apply</Button>
+              <Button variant="outline" className="flex-1" onClick={() => setLimitOpen(false)}>Cancel</Button>
             </div>
           </div>
         </DialogContent>
