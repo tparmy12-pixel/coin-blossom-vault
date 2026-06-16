@@ -2,21 +2,47 @@ import { ArrowLeft, Moon, Sun, User, Bell, Lock, Globe, Shield, LogOut } from "l
 import { Button } from "@/components/ui/button";
 import { Switch } from "@/components/ui/switch";
 import { useEffect, useState } from "react";
+import { useUser } from "@/contexts/UserContext";
+import { useNavigate } from "react-router-dom";
+import { toast } from "sonner";
 
 interface Props { onBack: () => void; onPrivacy: () => void; }
 
 const SettingsScreen = ({ onBack, onPrivacy }: Props) => {
   const [dark, setDark] = useState(() => document.documentElement.classList.contains("dark"));
+  const [notif, setNotif] = useState(() => localStorage.getItem("prankpay_notif") !== "off");
+  const [lang, setLang] = useState(() => localStorage.getItem("prankpay_lang") ?? "English");
+  const { logout } = useUser();
+  const navigate = useNavigate();
+
   useEffect(() => {
     document.documentElement.classList.toggle("dark", dark);
     localStorage.setItem("prankpay_theme", dark ? "dark" : "light");
   }, [dark]);
+  useEffect(() => { localStorage.setItem("prankpay_notif", notif ? "on" : "off"); }, [notif]);
+  useEffect(() => { localStorage.setItem("prankpay_lang", lang); }, [lang]);
 
-  const items = [
-    { icon: User, label: "Profile Settings" },
-    { icon: Bell, label: "Notifications" },
-    { icon: Lock, label: "Privacy & Security" },
-    { icon: Globe, label: "Language: English" },
+  const cycleLang = () => {
+    const langs = ["English", "हिन्दी", "मराठी", "தமிழ்"];
+    const next = langs[(langs.indexOf(lang) + 1) % langs.length];
+    setLang(next);
+    toast.success(`Language: ${next}`);
+  };
+
+  const handleLogout = () => {
+    logout();
+    toast.success("Logged out");
+    navigate("/");
+  };
+
+  const items: { icon: any; label: string; action: () => void; right?: React.ReactNode }[] = [
+    { icon: User, label: "Profile Settings", action: () => navigate("/profile") },
+    {
+      icon: Bell, label: "Notifications", action: () => setNotif(v => !v),
+      right: <Switch checked={notif} onCheckedChange={setNotif} onClick={(e) => e.stopPropagation()} />,
+    },
+    { icon: Lock, label: "Privacy & Security", action: onPrivacy },
+    { icon: Globe, label: `Language: ${lang}`, action: cycleLang },
     { icon: Shield, label: "Privacy Policy", action: onPrivacy },
   ];
 
@@ -42,12 +68,15 @@ const SettingsScreen = ({ onBack, onPrivacy }: Props) => {
 
       <div className="space-y-2 px-5 pt-4">
         {items.map((it) => (
-          <button key={it.label} onClick={it.action} className="flex w-full items-center gap-3 rounded-2xl bg-card p-4 text-left shadow-sm active:scale-95 transition">
-            <it.icon className="h-5 w-5 text-primary" />
-            <span className="text-sm font-medium">{it.label}</span>
+          <button key={it.label} onClick={it.action} className="flex w-full items-center justify-between gap-3 rounded-2xl bg-card p-4 text-left shadow-sm active:scale-95 transition">
+            <span className="flex items-center gap-3">
+              <it.icon className="h-5 w-5 text-primary" />
+              <span className="text-sm font-medium">{it.label}</span>
+            </span>
+            {it.right}
           </button>
         ))}
-        <button className="flex w-full items-center gap-3 rounded-2xl bg-card p-4 text-left text-destructive shadow-sm">
+        <button onClick={handleLogout} className="flex w-full items-center gap-3 rounded-2xl bg-card p-4 text-left text-destructive shadow-sm active:scale-95 transition">
           <LogOut className="h-5 w-5" />
           <span className="text-sm font-medium">Log out</span>
         </button>
