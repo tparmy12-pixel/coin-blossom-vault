@@ -68,18 +68,31 @@ const SettingsScreen = ({ onBack, onPrivacy }: Props) => {
 
       <div className="space-y-2 px-5 pt-4">
         {items.map((it) => (
-          <button key={it.label} onClick={it.action} className="flex w-full items-center justify-between gap-3 rounded-2xl bg-card p-4 text-left shadow-sm active:scale-95 transition">
+          <div
+            key={it.label}
+            role="button"
+            tabIndex={0}
+            onClick={it.action}
+            onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") it.action(); }}
+            className="flex w-full cursor-pointer items-center justify-between gap-3 rounded-2xl bg-card p-4 text-left shadow-sm active:scale-95 transition"
+          >
             <span className="flex items-center gap-3">
               <it.icon className="h-5 w-5 text-primary" />
               <span className="text-sm font-medium">{it.label}</span>
             </span>
             {it.right}
-          </button>
+          </div>
         ))}
-        <button onClick={handleLogout} className="flex w-full items-center gap-3 rounded-2xl bg-card p-4 text-left text-destructive shadow-sm active:scale-95 transition">
+        <div
+          role="button"
+          tabIndex={0}
+          onClick={handleLogout}
+          onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") handleLogout(); }}
+          className="flex w-full cursor-pointer items-center gap-3 rounded-2xl bg-card p-4 text-left text-destructive shadow-sm active:scale-95 transition"
+        >
           <LogOut className="h-5 w-5" />
           <span className="text-sm font-medium">Log out</span>
-        </button>
+        </div>
       </div>
     </div>
   );
