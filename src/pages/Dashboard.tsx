@@ -28,7 +28,7 @@ const Dashboard = () => {
   const [selectedPayBank, setSelectedPayBank] = useState<Bank | null>(null);
 
   useEffect(() => {
-    if (!loading && !currentUser) navigate("/");
+    if (!loading && !currentUser) navigate("/login", { replace: true });
   }, [currentUser, loading, navigate]);
 
   useEffect(() => {

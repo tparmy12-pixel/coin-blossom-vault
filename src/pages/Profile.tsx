@@ -40,7 +40,7 @@ const Profile = () => {
 
   const handleLogout = () => {
     logout();
-    navigate("/");
+    navigate("/login", { replace: true });
   };
 
   if (!currentUser) return null;
