@@ -1,12 +1,23 @@
 import { ArrowLeft, Banknote, Send, ShieldCheck, Landmark, CreditCard } from "lucide-react";
 import type { Bank, Screen } from "./types";
+import kidsPaymentBankLogo from "@/assets/banks/kids-payment-bank.png";
+import demoPaymentBankLogo from "@/assets/banks/demo-payment-bank.png";
+import smartPayBankLogo from "@/assets/banks/smartpay-bank.png";
+import airWalletBankLogo from "@/assets/banks/airwallet-bank.png";
+import secureStarBankLogo from "@/assets/banks/secure-star-bank.png";
+import rainbowSavingsBankLogo from "@/assets/banks/rainbow-savings-bank.png";
+import rocketPayBankLogo from "@/assets/banks/rocket-pay-bank.png";
+import familyWalletBankLogo from "@/assets/banks/family-wallet-bank.png";
 
 const banks: Bank[] = [
-  { name: "PayFast Bank", icon: "Banknote", color: "bg-blue-100 text-blue-600" },
-  { name: "AirPay Bank", icon: "Send", color: "bg-purple-100 text-purple-600" },
-  { name: "Secure Bank", icon: "ShieldCheck", color: "bg-green-100 text-green-600" },
-  { name: "National Bank", icon: "Landmark", color: "bg-amber-100 text-amber-600" },
-  { name: "Digital Wallet", icon: "CreditCard", color: "bg-pink-100 text-pink-600" },
+  { name: "Demo Payment Bank", icon: "ShieldCheck", color: "bg-cyan-100 text-cyan-700", logo: demoPaymentBankLogo },
+  { name: "Kids Payment Bank", icon: "Banknote", color: "bg-yellow-100 text-yellow-700", logo: kidsPaymentBankLogo },
+  { name: "SmartPay Demo Bank", icon: "CreditCard", color: "bg-blue-100 text-blue-700", logo: smartPayBankLogo },
+  { name: "AirWallet Bank", icon: "Send", color: "bg-orange-100 text-orange-700", logo: airWalletBankLogo },
+  { name: "Secure Star Bank", icon: "ShieldCheck", color: "bg-indigo-100 text-indigo-700", logo: secureStarBankLogo },
+  { name: "Rainbow Savings Bank", icon: "Landmark", color: "bg-pink-100 text-pink-700", logo: rainbowSavingsBankLogo },
+  { name: "Rocket Pay Bank", icon: "Send", color: "bg-sky-100 text-sky-700", logo: rocketPayBankLogo },
+  { name: "Family Wallet Bank", icon: "CreditCard", color: "bg-emerald-100 text-emerald-700", logo: familyWalletBankLogo },
 ];
 
 const iconMap: Record<string, React.ElementType> = {
@@ -42,8 +53,12 @@ const BankSelectionScreen = ({ selectedBank, onSelect, onBack }: Props) => (
                 : "border-border bg-card shadow-sm hover:shadow-md"
             }`}
           >
-            <div className={`flex h-12 w-12 items-center justify-center rounded-xl ${bank.color}`}>
-              {Icon && <Icon className="h-6 w-6" />}
+            <div className={`flex h-12 w-12 items-center justify-center overflow-hidden rounded-xl ${bank.color}`}>
+              {bank.logo ? (
+                <img src={bank.logo} alt={`${bank.name} logo`} loading="lazy" width={48} height={48} className="h-12 w-12 object-contain p-1" />
+              ) : (
+                Icon && <Icon className="h-6 w-6" />
+              )}
             </div>
             <div>
               <p className="font-semibold">{bank.name}</p>
