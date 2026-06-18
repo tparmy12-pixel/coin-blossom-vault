@@ -38,8 +38,12 @@ const PaymentFormScreen = ({
 
       {selectedBank && (
         <div className="mx-5 mt-2 flex items-center gap-3 rounded-xl bg-muted/50 p-3">
-          <div className={`flex h-8 w-8 items-center justify-center rounded-lg ${selectedBank.color}`}>
-            {BankIcon && <BankIcon className="h-4 w-4" />}
+          <div className={`flex h-9 w-9 items-center justify-center overflow-hidden rounded-lg ${selectedBank.color}`}>
+            {selectedBank.logo ? (
+              <img src={selectedBank.logo} alt={`${selectedBank.name} logo`} loading="lazy" width={36} height={36} className="h-9 w-9 object-contain p-0.5" />
+            ) : (
+              BankIcon && <BankIcon className="h-4 w-4" />
+            )}
           </div>
           <span className="text-sm font-medium">{selectedBank.name}</span>
         </div>
