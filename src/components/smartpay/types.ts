@@ -24,6 +24,7 @@ export interface Bank {
   name: string;
   icon: string;
   color: string;
+  logo?: string;
 }
 
 export interface CardData {
