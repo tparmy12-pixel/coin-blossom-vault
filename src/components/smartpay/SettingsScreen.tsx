@@ -5,6 +5,16 @@ import { useEffect, useState } from "react";
 import { useUser } from "@/contexts/UserContext";
 import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 
 interface Props { onBack: () => void; onPrivacy: () => void; }
 
@@ -12,6 +22,7 @@ const SettingsScreen = ({ onBack, onPrivacy }: Props) => {
   const [dark, setDark] = useState(() => document.documentElement.classList.contains("dark"));
   const [notif, setNotif] = useState(() => localStorage.getItem("prankpay_notif") !== "off");
   const [lang, setLang] = useState(() => localStorage.getItem("prankpay_lang") ?? "English");
+  const [logoutOpen, setLogoutOpen] = useState(false);
   const { logout } = useUser();
   const navigate = useNavigate();
 
@@ -31,8 +42,11 @@ const SettingsScreen = ({ onBack, onPrivacy }: Props) => {
 
   const handleLogout = () => {
     logout();
+    localStorage.removeItem("wallet_user_id");
+    localStorage.removeItem("prankpay_active_user");
+    setLogoutOpen(false);
     toast.success("Logged out");
-    navigate("/");
+    navigate("/login", { replace: true });
   };
 
   const items: { icon: any; label: string; action: () => void; right?: React.ReactNode }[] = [
@@ -86,14 +100,28 @@ const SettingsScreen = ({ onBack, onPrivacy }: Props) => {
         <div
           role="button"
           tabIndex={0}
-          onClick={handleLogout}
-          onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") handleLogout(); }}
+          onClick={() => setLogoutOpen(true)}
+          onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") setLogoutOpen(true); }}
           className="flex w-full cursor-pointer items-center gap-3 rounded-2xl bg-card p-4 text-left text-destructive shadow-sm active:scale-95 transition"
         >
           <LogOut className="h-5 w-5" />
           <span className="text-sm font-medium">Log out</span>
         </div>
       </div>
+      <AlertDialog open={logoutOpen} onOpenChange={setLogoutOpen}>
+        <AlertDialogContent className="max-w-sm rounded-2xl">
+          <AlertDialogHeader>
+            <AlertDialogTitle>Confirm log out</AlertDialogTitle>
+            <AlertDialogDescription>Your demo account will be removed from this device session.</AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction onClick={handleLogout} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">
+              Log out
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 };

@@ -1,13 +1,6 @@
 import { ArrowLeft, Banknote, Send, ShieldCheck, Landmark, CreditCard } from "lucide-react";
 import type { Bank, Screen } from "./types";
-
-const banks: Bank[] = [
-  { name: "PayFast Bank", icon: "Banknote", color: "bg-blue-100 text-blue-600" },
-  { name: "AirPay Bank", icon: "Send", color: "bg-purple-100 text-purple-600" },
-  { name: "Secure Bank", icon: "ShieldCheck", color: "bg-green-100 text-green-600" },
-  { name: "National Bank", icon: "Landmark", color: "bg-amber-100 text-amber-600" },
-  { name: "Digital Wallet", icon: "CreditCard", color: "bg-pink-100 text-pink-600" },
-];
+import { demoBanks } from "@/lib/demoBanks";
 
 const iconMap: Record<string, React.ElementType> = {
   Banknote, Send, ShieldCheck, Landmark, CreditCard,
@@ -30,7 +23,7 @@ const BankSelectionScreen = ({ selectedBank, onSelect, onBack }: Props) => (
     <p className="px-5 pb-4 text-sm text-muted-foreground">Choose a bank to proceed with payment</p>
 
     <div className="space-y-3 px-5">
-      {banks.map((bank) => {
+      {demoBanks.map((bank) => {
         const Icon = iconMap[bank.icon];
         return (
           <button
@@ -42,8 +35,12 @@ const BankSelectionScreen = ({ selectedBank, onSelect, onBack }: Props) => (
                 : "border-border bg-card shadow-sm hover:shadow-md"
             }`}
           >
-            <div className={`flex h-12 w-12 items-center justify-center rounded-xl ${bank.color}`}>
-              {Icon && <Icon className="h-6 w-6" />}
+            <div className={`flex h-12 w-12 items-center justify-center overflow-hidden rounded-xl ${bank.color}`}>
+              {bank.logo ? (
+                <img src={bank.logo} alt={`${bank.name} logo`} loading="lazy" width={48} height={48} className="h-12 w-12 object-contain p-1" />
+              ) : (
+                Icon && <Icon className="h-6 w-6" />
+              )}
             </div>
             <div>
               <p className="font-semibold">{bank.name}</p>
