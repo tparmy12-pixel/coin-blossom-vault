@@ -11,6 +11,8 @@ import BottomNav from "@/components/BottomNav";
 import { Wallet, Plus, Send, Gift, Trophy, Clock, Bell } from "lucide-react";
 import { toast } from "sonner";
 import type { Tables } from "@/integrations/supabase/types";
+import { demoBanks } from "@/lib/demoBanks";
+import type { Bank } from "@/components/smartpay/types";
 
 type Transaction = Tables<"transactions">;
 
@@ -23,6 +25,7 @@ const Dashboard = () => {
   const [payOpen, setPayOpen] = useState(false);
   const [payPhone, setPayPhone] = useState("");
   const [payAmount, setPayAmount] = useState("");
+  const [selectedPayBank, setSelectedPayBank] = useState<Bank | null>(null);
 
   useEffect(() => {
     if (!loading && !currentUser) navigate("/");
@@ -50,12 +53,13 @@ const Dashboard = () => {
 
   const handlePay = async () => {
     if (!currentUser || !payAmount || !payPhone) return;
+    if (!selectedPayBank) { toast.error("Please select a demo bank"); return; }
     const amt = Number(payAmount);
     if (amt <= 0 || amt > currentUser.wallet_balance) { toast.error("Insufficient balance"); return; }
     await supabase.from("users").update({ wallet_balance: currentUser.wallet_balance - amt }).eq("id", currentUser.id);
-    await supabase.from("transactions").insert({ user_id: currentUser.id, type: "payment", amount: amt, description: `Payment to ${payPhone}`, recipient_phone: payPhone });
+    await supabase.from("transactions").insert({ user_id: currentUser.id, type: "payment", amount: amt, description: `${selectedPayBank.name} payment to ${payPhone}`, recipient_phone: payPhone });
     await refreshUser();
-    setPayAmount(""); setPayPhone(""); setPayOpen(false);
+    setPayAmount(""); setPayPhone(""); setSelectedPayBank(null); setPayOpen(false);
     toast.success("Payment successful! ✅");
     const { data } = await supabase.from("transactions").select("*").eq("user_id", currentUser.id).order("created_at", { ascending: false }).limit(5);
     if (data) setRecentTxns(data);
@@ -176,9 +180,22 @@ const Dashboard = () => {
         <DialogContent className="max-w-sm">
           <DialogHeader><DialogTitle>Send Payment</DialogTitle></DialogHeader>
           <div className="space-y-4">
+            <div className="grid max-h-52 grid-cols-2 gap-2 overflow-y-auto pr-1">
+              {demoBanks.map((bank) => (
+                <button
+                  key={bank.name}
+                  type="button"
+                  onClick={() => setSelectedPayBank(bank)}
+                  className={`flex items-center gap-2 rounded-xl border p-2 text-left transition active:scale-95 ${selectedPayBank?.name === bank.name ? "border-primary bg-primary/10" : "border-border bg-card"}`}
+                >
+                  {bank.logo && <img src={bank.logo} alt={`${bank.name} logo`} loading="lazy" width={34} height={34} className="h-9 w-9 shrink-0 object-contain" />}
+                  <span className="text-xs font-semibold leading-tight">{bank.name}</span>
+                </button>
+              ))}
+            </div>
             <Input placeholder="Phone number" value={payPhone} onChange={e => setPayPhone(e.target.value)} />
             <Input type="number" placeholder="Amount (₹)" value={payAmount} onChange={e => setPayAmount(e.target.value)} />
-            <Button className="w-full" onClick={handlePay} disabled={!payPhone || !payAmount}>Pay ₹{payAmount || "0"}</Button>
+            <Button className="w-full" onClick={handlePay} disabled={!selectedPayBank || !payPhone || !payAmount}>Pay ₹{payAmount || "0"}</Button>
           </div>
         </DialogContent>
       </Dialog>
